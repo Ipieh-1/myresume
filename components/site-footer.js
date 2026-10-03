@@ -64,7 +64,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/10 pt-5 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-white/40 pt-5 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Ashinyokem Jeffery. All rights reserved.</p>
           <Link href="/contact" className="w-fit transition-colors hover:text-amber-200">
             Have a project in mind? Let&apos;s talk <span aria-hidden="true">↗</span>

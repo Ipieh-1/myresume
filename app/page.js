@@ -60,7 +60,7 @@ export default function Home() {
             CRAFTING, ENGAGING,<br></br> HIGH-PERFORMANCE <br></br> WEB EXPERIENCES.
           </p>
           <div className="text-2xl text-white/50 py-4 ">
-            I build responsive, modern interfaces that convert and <br></br> connect. Specializing in standard and custom projects <br></br> delivered within strict timelines(2-5 weeks).
+            I build responsive, modern interfaces that convert and <br></br> connect. Specializing in standard and custom projects <br></br> delivered within strict timelines (2-5 weeks).
           </div>
           <Link
             href="/projects"

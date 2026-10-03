@@ -4,13 +4,25 @@ import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-function ResponsiveDropdown({ name, options, placeholder, defaultValue = '', required = false }) {
+function ResponsiveDropdown({
+  name,
+  options,
+  placeholder,
+  defaultValue = '',
+  required = false,
+  onValueChange,
+}) {
   const [value, setValue] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const dropdownRef = useRef(null);
   const selectedIndex = options.findIndex((option) => option.value === value);
   const listboxId = `${name}-options`;
+
+  function selectValue(nextValue) {
+    setValue(nextValue);
+    onValueChange?.(nextValue);
+  }
 
   useEffect(() => {
     function handleOutsidePointer(event) {
@@ -29,12 +41,13 @@ function ResponsiveDropdown({ name, options, placeholder, defaultValue = '', req
 
     function handleFormReset() {
       setValue(defaultValue);
+      onValueChange?.(defaultValue);
       setIsOpen(false);
     }
 
     form.addEventListener('reset', handleFormReset);
     return () => form.removeEventListener('reset', handleFormReset);
-  }, [defaultValue]);
+  }, [defaultValue, onValueChange]);
 
   function openDropdown() {
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
@@ -58,7 +71,7 @@ function ResponsiveDropdown({ name, options, placeholder, defaultValue = '', req
       }
     } else if ((event.key === 'Enter' || event.key === ' ') && isOpen) {
       event.preventDefault();
-      setValue(options[activeIndex].value);
+      selectValue(options[activeIndex].value);
       setIsOpen(false);
     } else if (event.key === 'Escape' && isOpen) {
       event.preventDefault();
@@ -107,7 +120,7 @@ function ResponsiveDropdown({ name, options, placeholder, defaultValue = '', req
               onMouseEnter={() => setActiveIndex(index)}
               onPointerDown={(event) => {
                 event.preventDefault();
-                setValue(option.value);
+                selectValue(option.value);
                 setIsOpen(false);
               }}
               className={`cursor-pointer break-words rounded-xl px-3 py-3 text-sm leading-5 transition-colors ${
@@ -128,6 +141,10 @@ function ResponsiveDropdown({ name, options, placeholder, defaultValue = '', req
 export default function ContactForm({ endpoint }) {
   const [submissionState, setSubmissionState] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [service, setService] = useState('');
+  const [timeline, setTimeline] = useState('');
+  const [budget, setBudget] = useState('');
+  const [designReadiness, setDesignReadiness] = useState('');
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -201,58 +218,121 @@ export default function ContactForm({ endpoint }) {
             type="email"
           />
         </label>
-        <label className="min-w-0 text-sm font-medium text-white/80">
-          What do you need?
-          <ResponsiveDropdown
-            name="service"
-            placeholder="Select a Service"
-            required
-            options={[
-              { value: 'Landing Page', label: 'Landing Page' },
-              { value: 'Multi-Page Business Website', label: 'Multi-Page Business Website' },
-              { value: 'Web Application Front End', label: 'Web Application Front End' },
-              { value: 'Something Else...', label: 'Something Else...' },
-            ]}
-          />
-        </label>
-        <label className="min-w-0 text-sm font-medium text-white/80">
-          Preferred timeline
-          <ResponsiveDropdown
-            name="Timeline"
-            placeholder="Select a preferred timeline"
-            options={[
-              { value: '1-2 weeks', label: '1-2 weeks' },
-              { value: '2-4 weeks', label: '2-4 weeks' },
-              { value: '3-5 weeks', label: '3-5 weeks' },
-              { value: 'Flexible', label: 'Flexible' },
-            ]}
-          />
-        </label>
-        <label className="min-w-0 text-sm font-medium text-white/80">
-          Estimated Budget
-          <ResponsiveDropdown
-            name="Budget"
-            placeholder="Select a budget range"
-            options={[
-              { value: 'Under ₦150,000 / $300 USD', label: 'Under ₦150,000 / $300 USD' },
-              { value: '₦150,000 – ₦350,000 / $300 – $800 USD', label: '₦150,000 – ₦350,000 / $300 – $800 USD' },
-              { value: '$800 – $1,500+ USD', label: '$800 – $1,500+ USD' },
-              { value: 'Not sure / Need advice', label: 'Not sure / Need advice' },
-            ]}
-          />
-        </label>
-        <label className="min-w-0 text-sm font-medium text-white/80">
-          Do you have a design ready?
-          <ResponsiveDropdown
-            name="Design Readiness"
-            placeholder="Select an option"
-            options={[
-              { value: 'Yes, I have Figma / Adobe XD files ready', label: 'Yes, I have Figma / Adobe XD files ready' },
-              { value: 'I have reference sites, but need a design', label: 'I have reference sites, but need a design' },
-              { value: 'No design, starting from scratch', label: 'No design, starting from scratch' },
-            ]}
-          />
-        </label>
+        <div className="min-w-0">
+          <label className="block text-sm font-medium text-white/80">
+            What do you need?
+            <ResponsiveDropdown
+              name="service"
+              placeholder="Select a Service"
+              required
+              onValueChange={setService}
+              options={[
+                { value: 'Landing Page', label: 'Landing Page' },
+                { value: 'Multi-Page Business Website', label: 'Multi-Page Business Website' },
+                { value: 'Web Application Front End', label: 'Web Application Front End' },
+                { value: 'Other', label: 'Other' },
+              ]}
+            />
+          </label>
+          {service === 'Other' && (
+            <label className="mt-4 block text-sm font-medium text-white/80">
+              Please describe what you need
+              <input
+                autoComplete="off"
+                className="mt-2 min-h-12 w-full min-w-0 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-white/35 focus:border-amber-200"
+                name="Service Details"
+                placeholder="Describe the service you need"
+                required
+              />
+            </label>
+          )}
+        </div>
+        <div className="min-w-0">
+          <label className="block text-sm font-medium text-white/80">
+            Preferred timeline
+            <ResponsiveDropdown
+              name="Timeline"
+              placeholder="Select a preferred timeline"
+              onValueChange={setTimeline}
+              options={[
+                { value: '1-2 weeks', label: '1-2 weeks' },
+                { value: '2-4 weeks', label: '2-4 weeks' },
+                { value: '3-5 weeks', label: '3-5 weeks' },
+                { value: 'Flexible', label: 'Flexible' },
+                { value: 'Other', label: 'Other' },
+              ]}
+            />
+          </label>
+          {timeline === 'Other' && (
+            <label className="mt-4 block text-sm font-medium text-white/80">
+              Please specify your preferred timeline
+              <input
+                autoComplete="off"
+                className="mt-2 min-h-12 w-full min-w-0 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-white/35 focus:border-amber-200"
+                name="Timeline Details"
+                placeholder="For example, by the end of next month"
+                required
+              />
+            </label>
+          )}
+        </div>
+        <div className="min-w-0">
+          <label className="block text-sm font-medium text-white/80">
+            Estimated Budget
+            <ResponsiveDropdown
+              name="Budget"
+              placeholder="Select a budget range"
+              onValueChange={setBudget}
+              options={[
+                { value: 'Under ₦150,000 / $300 USD', label: 'Under ₦150,000 / $300 USD' },
+                { value: '₦150,000 – ₦350,000 / $300 – $800 USD', label: '₦150,000 – ₦350,000 / $300 – $800 USD' },
+                { value: '$800 – $1,500+ USD', label: '$800 – $1,500+ USD' },
+                { value: 'Not sure / Need advice', label: 'Not sure / Need advice' },
+                { value: 'Other', label: 'Other' },
+              ]}
+            />
+          </label>
+          {budget === 'Other' && (
+            <label className="mt-4 block text-sm font-medium text-white/80">
+              Please specify your budget
+              <input
+                autoComplete="off"
+                className="mt-2 min-h-12 w-full min-w-0 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-white/35 focus:border-amber-200"
+                name="Budget Details"
+                placeholder="Enter your estimated budget"
+                required
+              />
+            </label>
+          )}
+        </div>
+        <div className="min-w-0">
+          <label className="block text-sm font-medium text-white/80">
+            Do you have a design ready?
+            <ResponsiveDropdown
+              name="Design Readiness"
+              placeholder="Select an option"
+              onValueChange={setDesignReadiness}
+              options={[
+                { value: 'Yes, I have Figma / Adobe XD files ready', label: 'Yes, I have Figma / Adobe XD files ready' },
+                { value: 'I have reference sites, but need a design', label: 'I have reference sites, but need a design' },
+                { value: 'No design, starting from scratch', label: 'No design, starting from scratch' },
+                { value: 'Other', label: 'Other' },
+              ]}
+            />
+          </label>
+          {designReadiness === 'Other' && (
+            <label className="mt-4 block text-sm font-medium text-white/80">
+              Please describe your design readiness
+              <input
+                autoComplete="off"
+                className="mt-2 min-h-12 w-full min-w-0 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white outline-none transition-colors placeholder:text-white/35 focus:border-amber-200"
+                name="Design Readiness Details"
+                placeholder="Add any details about your design"
+                required
+              />
+            </label>
+          )}
+        </div>
         <label className="min-w-0 text-sm font-medium text-white/80 sm:col-span-2">
           Project Details
           <textarea
